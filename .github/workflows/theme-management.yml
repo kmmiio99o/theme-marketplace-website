@@ -1,0 +1,20 @@
+# .github/workflows/theme-management.yml
+name: Theme Management
+on:
+  workflow_dispatch: # Ręczne uruchomienie
+  push:
+    paths:
+      - "themes/**"
+
+jobs:
+  manage-themes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Process themes
+        run: |
+          echo "Processing themes..."
+
