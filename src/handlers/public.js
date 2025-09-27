@@ -666,12 +666,15 @@ export async function showHomePage(request, env) {
       displayName: theme.name,
       displayAuthor:
         theme.source === "external"
-          ? theme.author || theme.externalRepo?.author || "Unknown"
-          : theme.author || "Unknown",
+          ? theme.themeData?.authors
+            ? theme.themeData.authors.map((author) => author.name).join(", ")
+            : theme.author || theme.externalRepo?.author || "Unknown"
+          : theme.themeData?.authors
+            ? theme.themeData.authors.map((author) => author.name).join(", ")
+            : theme.author || "Unknown",
       displayDescription: theme.description || "No description available",
     };
   };
-  // env is already available as a parameter
 
   try {
     const themes = await getAllThemesFromGitHub(env, "approved");
@@ -781,10 +784,10 @@ export async function showHomePage(request, env) {
                         </div>
                     </div>
                     <div class="theme-body">
-                        <p class="theme-description">${theme.description || "No description available"}</p>
+                        <p class="theme-description">${theme.description || theme.themeData?.description || "No description available"}</p>
                     </div>
                     <div class="theme-actions">
-                        <a href="/theme/${theme.id}" class="btn btn-filled">
+                        <a href="/theme/${theme.themeData?.filename?.replace(".json", "")}" class="btn btn-filled">
                             <span class="material-symbols-outlined">visibility</span> View Details
                         </a>
                         ${
@@ -862,7 +865,7 @@ export async function showHomePage(request, env) {
                         </div>
                     </div>
                     <div class="theme-body">
-                        <p class="theme-description">\${theme.description}</p>
+                        <p class="theme-description">\${theme.themeData?.description || "No description available"}</p>
                         \${theme.source === "external" ? \`
                         <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px;">
                             <span class="material-symbols-outlined" style="font-size: 16px;">folder_open</span>
@@ -889,9 +892,11 @@ export async function showHomePage(request, env) {
             function filterThemes(query) {
                 const lowerCaseQuery = query.toLowerCase();
                 return allThemes.filter(theme => {
-                    const name = theme.source === "external" ? theme.themeData.name : theme.name;
-                    const description = theme.source === "external" ? theme.themeData.description : (theme.description || "");
-                    const author = theme.source === "external" ? (theme.themeData.author || theme.externalRepo?.author || "") : (theme.author || "");
+                    const name = theme.themeData?.name || "";
+                    const description = theme.themeData?.description || "";
+                    const author = theme.source === "external"
+                      ? (theme.themeData?.author || theme.externalRepo?.author || "")
+                      : (theme.themeData?.authors?.[0]?.name || theme.themeData?.author || "");
 
                     return name.toLowerCase().includes(lowerCaseQuery) ||
                            description.toLowerCase().includes(lowerCaseQuery) ||
@@ -1402,14 +1407,13 @@ export async function showSubmitForm(request) {
                         </div>
                         <div class="upload-sections-container">
                             <div class="json-editor-section">
-                                <div class="form-group">
-                                    <label class="form-label" for="repositoryUrl">Theme Link</label>
-                                    <div class="json-toolbar">
-                                        <button type="button" id="btnValidateUrl" class="btn btn-outlined"><span class="material-symbols-outlined">link_check</span> Validate URL</button>
-                                        <button type="button" id="btnCopyUrl" class="btn btn-outlined"><span class="material-symbols-outlined">content_copy</span> Copy</button>
+                                <div class="upload-section">
+                                    <div class="upload-section-header">
+                                        <span class="material-symbols-outlined">link</span>
+                                        <h3>Theme Link</h3>
                                     </div>
-                                    <div class="code-editor">
-                                        <div class="editor-inner">
+                                    <div class="code-editor" style="margin-top: 12px;">
+                                        <div class="editor-inner" style="padding: 12px;">
                                             <input type="url"
                                                 class="form-control"
                                                 id="repositoryUrl"
@@ -1802,6 +1806,42 @@ export async function showSubmitRepoForm(request) {
     <script>(function(){try{var s=localStorage.getItem('theme');if(s?s==='dark':true){document.documentElement.classList.add('dark-mode');}}catch(e){document.documentElement.classList.add('dark-mode');}})();</script>
     ${sharedStyles}
     <style>
+        /* Guidelines section styling */
+        .guidelines-card {
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            padding: 24px;
+            border-radius: 12px;
+        }
+        .guidelines-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            color: var(--md-sys-color-on-surface);
+            font-size: 1.3rem;
+        }
+        .guidelines-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--md-sys-color-on-surface-variant);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .guidelines-card li {
+            position: relative;
+            padding-left: 24px;
+        }
+        .guidelines-card li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--md-sys-color-primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
         .repo-form-container {
             max-width: 800px;
             margin: 0 auto;
@@ -1908,6 +1948,8 @@ export async function showSubmitRepoForm(request) {
                     </button>
                 </form>
             </div>
+
+            <div style="height: 24px;"></div>
 
             <div class="card guidelines-card">
                 <h3><span class="material-symbols-outlined">info</span> Repository Submission Guidelines</h3>
@@ -2142,11 +2184,16 @@ async function fetchThemesFromRepository(repo, env) {
             const themeName =
               themeData.name ||
               item.name.replace(".json", "").replace(/_/g, " ");
+            const authorName =
+              themeData.authors?.[0]?.name ||
+              themeData.author ||
+              repo.author ||
+              "Unknown";
             const themeMetadata = {
               id: `external_${repo.id}_${item.name.replace(".json", "")}`,
               source: "external",
               name: themeName,
-              author: themeData.author || repo.author || "Unknown",
+              author: authorName,
               description: themeData.description || `Theme from ${repo.name}`,
               url: item.download_url,
               repositoryUrl: repo.url,
@@ -2613,16 +2660,7 @@ export async function handleThemeSubmission(request, env) {
 
 export async function showThemeDetails(request) {
   const cleanThemeData = (theme) => {
-    if (theme.rawData) {
-      return theme.rawData;
-    }
-    const cleaned = { ...theme };
-    delete cleaned.id;
-    delete cleaned.source;
-    delete cleaned.createdAt;
-    delete cleaned.externalRepo;
-    delete cleaned.repositoryUrl;
-    return cleaned;
+    return theme;
   };
 
   const env = request.env;
@@ -2652,12 +2690,11 @@ export async function showThemeDetails(request) {
     }
 
     // Generate appropriate URL based on theme source
-    let rawUrl = "";
-    if (theme.source === "external") {
-      rawUrl = theme.url;
-    } else {
-      rawUrl = `https://raw.githubusercontent.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/main/themes/approved/${encodeURIComponent(id)}.json`;
-    }
+    let rawUrl =
+      theme.source === "external"
+        ? theme.url
+        : theme.repositoryUrl ||
+          `https://raw.githubusercontent.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/main/themes/approved/${encodeURIComponent(id)}.json`;
 
     const html = `
 <!DOCTYPE html>
@@ -2719,49 +2756,45 @@ export async function showThemeDetails(request) {
 
             <div class="card">
                 <h2>Theme Description</h2>
-                <p>${theme.description}</p>
-                ${
-                  theme.source === "external"
-                    ? `
-                <div style="margin-top: 16px; padding: 16px; background: var(--md-sys-color-surface-variant); border-radius: 8px; border-left: 4px solid var(--md-sys-color-primary);">
+                <div style="padding: 16px; background: var(--md-sys-color-surface-variant); border-radius: 8px; border-left: 4px solid var(--md-sys-color-primary);">
                     <h3 style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface); font-size: 1.1rem;">
-                        <span class="material-symbols-outlined" style="font-size: 20px; vertical-align: middle;">folder_shared</span>
-                        External Repository
+                        <span class="material-symbols-outlined" style="font-size: 20px; vertical-align: middle;">${theme.source === "external" ? "folder_shared" : "palette"}</span>
+                        ${theme.source === "external" ? "External Repository" : "Theme Details"}
                     </h3>
+                    ${
+                      theme.source === "external"
+                        ? `
                     <p style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface-variant);">
                         <strong>Repository:</strong> <a href="${theme.externalRepo?.url || theme.url || "#"}" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary);">${theme.externalRepo?.name || "External Repository"}</a>
-                    </p>
+                    </p>`
+                        : ""
+                    }
                     <p style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface-variant);">
-                        <strong>Author:</strong> ${theme.author || theme.externalRepo?.author || "Unknown"}
+                        <strong>Author${theme.authors?.length > 1 ? "s" : ""}:</strong> ${theme.authors ? theme.authors.map((author) => author.name).join(", ") : theme.author || "Unknown"}
                     </p>
                     <p style="margin: 0; color: var(--md-sys-color-on-surface-variant);">
-                        <strong>Description:</strong> ${theme.externalRepo?.description || theme.description || "No description available"}
+                        <strong>Description:</strong> ${theme.description || "No description available"}
                     </p>
                 </div>
-                `
-                    : ""
-                }
             </div>
 
-            ${
-              theme.repositoryUrl
-                ? `
             <div class="card">
-                <h2><span class="material-symbols-outlined">folder_open</span> Repository</h2>
-                <a href="${theme.repositoryUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined" style="text-align: left; justify-content: flex-start;">
-                    <span class="material-symbols-outlined">open_in_new</span> ${theme.repositoryUrl}
-                </a>
-            </div>
-            `
-                : ""
-            }
-
-            <div class="card">
-                <h2><span class="material-symbols-outlined">link</span> ${theme.source === "external" ? "Repository Link" : "Direct GitHub Raw Link"}</h2>
-                <div class="raw-link" id="rawLink" style="background: var(--md-sys-color-surface-variant); padding: 15px; border-radius: 6px; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline); margin: 15px 0; word-break: break-all;">${rawUrl}</div>
-                <button class="btn btn-copy" onclick="copyRawLink()">
-                    <span class="material-symbols-outlined">content_copy</span> Copy Link
-                </button>
+                <div class="upload-section">
+                    <div class="upload-section-header">
+                        <span class="material-symbols-outlined">link</span>
+                        <h3>Theme Link</h3>
+                    </div>
+                    <div class="json-toolbar">
+                        <button class="btn btn-outlined" onclick="copyRawLink()">
+                            <span class="material-symbols-outlined">content_copy</span> Copy Link
+                        </button>
+                    </div>
+                    <div class="code-editor" style="margin-top: 12px;">
+                        <div class="editor-inner" style="padding: 12px;">
+                            <div class="raw-link" id="rawLink" style="font-family: 'Roboto Mono', monospace; font-size: 0.95rem; color: var(--md-sys-color-on-surface); word-break: break-all;">${rawUrl}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -2771,8 +2804,30 @@ export async function showThemeDetails(request) {
                         <span class="material-symbols-outlined">content_copy</span> Copy JSON
                     </button>
                 </div>
-                <pre id="themeJSON" style="background: var(--md-sys-color-surface-variant); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline);">${JSON.stringify(theme.source === "external" ? theme.themeData : theme, null, 2)}</pre>
+                <pre id="themeJSON" style="background: var(--md-sys-color-surface-variant); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline);">${JSON.stringify(theme, null, 2)}</pre>
             </div>
+
+            <script>
+                function copyRawLink() {
+                    const rawLink = document.getElementById('rawLink').textContent;
+                    navigator.clipboard.writeText(rawLink).then(() => {
+                        const notification = document.getElementById('notification');
+                        notification.textContent = 'Link copied to clipboard!';
+                        notification.classList.add('show');
+                        setTimeout(() => notification.classList.remove('show'), 3000);
+                    });
+                }
+
+                function copyJSON() {
+                    const jsonContent = document.getElementById('themeJSON').textContent;
+                    navigator.clipboard.writeText(jsonContent).then(() => {
+                        const notification = document.getElementById('notification');
+                        notification.textContent = 'JSON copied to clipboard!';
+                        notification.classList.add('show');
+                        setTimeout(() => notification.classList.remove('show'), 3000);
+                    });
+                }
+            </script>
 
             <div style="text-align: center; margin: 30px 0;" class="theme-actions">
                 ${

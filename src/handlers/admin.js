@@ -2,8 +2,13 @@ import {
   getAllThemesFromGitHub,
   moveThemeBetweenStatuses,
   deleteThemeFromGitHub,
+  getThemeFromGitHub,
 } from "../utils/github.js";
-import { getNavbarHtml, sharedStyles, getExternalRepositories } from "./public.js";
+import {
+  getNavbarHtml,
+  sharedStyles,
+  getExternalRepositories,
+} from "./public.js";
 import { isAdminAuthenticated } from "./auth.js";
 
 // Handler for showing the admin login page
@@ -227,11 +232,11 @@ export async function showPendingThemes(request, env) {
             <div class="theme-card">
                 <h3>${theme.name}</h3>
                 <p>${theme.description}</p>
+                <p><strong>Author:</strong> ${theme.author}</p>
                 <p><strong>ID:</strong> ${theme.id}</p>
                 <div style="display: flex; gap: 0.5rem; margin-top: 1rem; align-items: center;">
-                    <button class="btn btn-filled" onclick="copyThemeLink('${theme.id}')" style="margin-right: 0.5rem;">Copy Link</button>
                     <form method="POST" action="/admin/approve/${theme.id}" style="display: inline;">
-                        <button type="submit" class="btn btn-filled">Approve</button>
+                        <button type="submit" class="btn btn-success">Approve</button>
                     </form>
                     <form method="POST" action="/admin/reject/${theme.id}" style="display: inline;">
                         <button type="submit" class="btn btn-error">Reject</button>
@@ -486,7 +491,7 @@ export async function rejectTheme(request, env) {
       const baseUrl = new URL(request.url).origin;
       return Response.redirect(`${baseUrl}/admin/pending`, 302);
     } else {
-      console.error('❌ Delete failed for theme:', id);
+      console.error("❌ Delete failed for theme:", id);
       return new Response("Error rejecting theme", { status: 500 });
     }
   } catch (error) {
@@ -518,13 +523,19 @@ export async function deleteTheme(request, env) {
 // External Repositories Management
 export async function showExternalRepositories(request) {
   const env = request.env;
-  
+
   try {
     const repositories = await getExternalRepositories(env);
-    const pendingRepos = repositories.filter(repo => repo.status === "pending");
-    const approvedRepos = repositories.filter(repo => repo.status === "approved");
-    const rejectedRepos = repositories.filter(repo => repo.status === "rejected");
-    
+    const pendingRepos = repositories.filter(
+      (repo) => repo.status === "pending",
+    );
+    const approvedRepos = repositories.filter(
+      (repo) => repo.status === "approved",
+    );
+    const rejectedRepos = repositories.filter(
+      (repo) => repo.status === "rejected",
+    );
+
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -620,11 +631,15 @@ export async function showExternalRepositories(request) {
                 <p>Manage external repository submissions</p>
             </div>
 
-            ${pendingRepos.length > 0 ? `
+            ${
+              pendingRepos.length > 0
+                ? `
             <div class="card" style="margin-bottom: 32px;">
                 <h2><span class="material-symbols-outlined">pending</span> Pending Repositories (${pendingRepos.length})</h2>
                 <div class="theme-grid">
-                    ${pendingRepos.map(repo => `
+                    ${pendingRepos
+                      .map(
+                        (repo) => `
                     <div class="repo-card">
                         <div class="repo-header">
                             <div>
@@ -655,16 +670,24 @@ export async function showExternalRepositories(request) {
                             </form>
                         </div>
                     </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
-            ${approvedRepos.length > 0 ? `
+            ${
+              approvedRepos.length > 0
+                ? `
             <div class="card" style="margin-bottom: 32px;">
                 <h2><span class="material-symbols-outlined">check_circle</span> Approved Repositories (${approvedRepos.length})</h2>
                 <div class="theme-grid">
-                    ${approvedRepos.map(repo => `
+                    ${approvedRepos
+                      .map(
+                        (repo) => `
                     <div class="repo-card">
                         <div class="repo-header">
                             <div>
@@ -685,16 +708,24 @@ export async function showExternalRepositories(request) {
                             </form>
                         </div>
                     </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
-            ${rejectedRepos.length > 0 ? `
+            ${
+              rejectedRepos.length > 0
+                ? `
             <div class="card" style="margin-bottom: 32px;">
                 <h2><span class="material-symbols-outlined">cancel</span> Rejected Repositories (${rejectedRepos.length})</h2>
                 <div class="theme-grid">
-                    ${rejectedRepos.map(repo => `
+                    ${rejectedRepos
+                      .map(
+                        (repo) => `
                     <div class="repo-card">
                         <div class="repo-header">
                             <div>
@@ -720,18 +751,26 @@ export async function showExternalRepositories(request) {
                             </form>
                         </div>
                     </div>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
 
-            ${repositories.length === 0 ? `
+            ${
+              repositories.length === 0
+                ? `
             <div class="empty-state">
                 <span class="material-symbols-outlined">folder_off</span>
                 <h3>No External Repositories</h3>
                 <p>No external repositories have been submitted yet.</p>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
         </div>
     </main>
 
@@ -763,18 +802,21 @@ export async function showExternalRepositories(request) {
 export async function approveRepository(request) {
   const env = request.env;
   const { id } = request.params;
-  
+
   try {
     const repositories = await getExternalRepositories(env);
-    const repoIndex = repositories.findIndex(repo => repo.id === id);
-    
+    const repoIndex = repositories.findIndex((repo) => repo.id === id);
+
     if (repoIndex === -1) {
       return new Response("Repository not found", { status: 404 });
     }
-    
+
     repositories[repoIndex].status = "approved";
-    await env.THEMES.put("external_repositories", JSON.stringify(repositories, null, 2));
-    
+    await env.THEMES.put(
+      "external_repositories",
+      JSON.stringify(repositories, null, 2),
+    );
+
     const baseUrl = new URL(request.url).origin;
     return Response.redirect(`${baseUrl}/admin/repositories`, 302);
   } catch (error) {
@@ -786,18 +828,21 @@ export async function approveRepository(request) {
 export async function rejectRepository(request) {
   const env = request.env;
   const { id } = request.params;
-  
+
   try {
     const repositories = await getExternalRepositories(env);
-    const repoIndex = repositories.findIndex(repo => repo.id === id);
-    
+    const repoIndex = repositories.findIndex((repo) => repo.id === id);
+
     if (repoIndex === -1) {
       return new Response("Repository not found", { status: 404 });
     }
-    
+
     repositories[repoIndex].status = "rejected";
-    await env.THEMES.put("external_repositories", JSON.stringify(repositories, null, 2));
-    
+    await env.THEMES.put(
+      "external_repositories",
+      JSON.stringify(repositories, null, 2),
+    );
+
     const baseUrl = new URL(request.url).origin;
     return Response.redirect(`${baseUrl}/admin/repositories`, 302);
   } catch (error) {
@@ -809,13 +854,16 @@ export async function rejectRepository(request) {
 export async function deleteRepository(request) {
   const env = request.env;
   const { id } = request.params;
-  
+
   try {
     const repositories = await getExternalRepositories(env);
-    const filteredRepos = repositories.filter(repo => repo.id !== id);
-    
-    await env.THEMES.put("external_repositories", JSON.stringify(filteredRepos, null, 2));
-    
+    const filteredRepos = repositories.filter((repo) => repo.id !== id);
+
+    await env.THEMES.put(
+      "external_repositories",
+      JSON.stringify(filteredRepos, null, 2),
+    );
+
     const baseUrl = new URL(request.url).origin;
     return Response.redirect(`${baseUrl}/admin/repositories`, 302);
   } catch (error) {
