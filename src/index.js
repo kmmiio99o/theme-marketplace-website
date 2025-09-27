@@ -3,6 +3,9 @@ import {
   showHomePage,
   showSubmitForm,
   handleThemeSubmission,
+  showSubmitRepoForm,
+  handleRepoSubmission,
+  showRepositoriesPage,
   showThemeDetails,
   downloadThemeJSON,
 } from "./handlers/public.js";
@@ -16,6 +19,10 @@ import {
   approveTheme,
   rejectTheme,
   deleteTheme,
+  showExternalRepositories,
+  approveRepository,
+  rejectRepository,
+  deleteRepository,
   handleAdminLogout,
 } from "./handlers/admin.js";
 
@@ -27,7 +34,14 @@ const router = Router();
 // Public routes
 router.get("/", (request, env) => showHomePage(request, env));
 router.get("/submit", (request, env) => showSubmitForm(request, env));
-router.post("/submit", handleThemeSubmission);
+router.post("/submit", (request, env) => handleThemeSubmission(request, env));
+router.get("/submit-repo", (request, env) => showSubmitRepoForm(request, env));
+router.post("/submit-repo", (request, env) =>
+  handleRepoSubmission(request, env),
+);
+router.get("/repositories", (request, env) =>
+  showRepositoriesPage(request, env),
+);
 router.get("/theme/:id", (request, env) => showThemeDetails(request, env));
 router.get("/theme/:id.json", (request, env) =>
   downloadThemeJSON(request, env),
@@ -44,9 +58,13 @@ router.post("/admin/logout", handleAdminLogout);
 router.get("/admin/dashboard", requireAuth, showAdminDashboard);
 router.get("/admin/pending", requireAuth, showPendingThemes);
 router.get("/admin/approved", requireAuth, showApprovedThemes);
+router.get("/admin/repositories", requireAuth, showExternalRepositories);
 router.post("/admin/approve/:id", requireAuth, approveTheme);
 router.post("/admin/reject/:id", requireAuth, rejectTheme);
 router.post("/admin/delete/:id", requireAuth, deleteTheme);
+router.post("/admin/approve-repo/:id", requireAuth, approveRepository);
+router.post("/admin/reject-repo/:id", requireAuth, rejectRepository);
+router.post("/admin/delete-repo/:id", requireAuth, deleteRepository);
 
 // 404 handler
 router.all("*", () => new Response("Not Found", { status: 404 }));

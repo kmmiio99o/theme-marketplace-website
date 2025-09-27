@@ -3,7 +3,7 @@ import {
   moveThemeBetweenStatuses,
   deleteThemeFromGitHub,
 } from "../utils/github.js";
-import { getNavbarHtml, sharedStyles } from "./public.js";
+import { getNavbarHtml, sharedStyles, getExternalRepositories } from "./public.js";
 import { isAdminAuthenticated } from "./auth.js";
 
 // Handler for showing the admin login page
@@ -185,6 +185,10 @@ export async function showAdminDashboard(request, env) {
                 <a href="/admin/approved" class="btn btn-filled">
                     <span class="material-symbols-outlined">check_circle</span>
                     <span>Approved Themes</span>
+                </a>
+                <a href="/admin/repositories" class="btn btn-filled">
+                    <span class="material-symbols-outlined">folder_shared</span>
+                    <span>External Repositories</span>
                 </a>
             </div>
         </div>
@@ -508,5 +512,314 @@ export async function deleteTheme(request, env) {
   } catch (error) {
     console.error("Delete error:", error);
     return new Response("Error deleting theme", { status: 500 });
+  }
+}
+
+// External Repositories Management
+export async function showExternalRepositories(request) {
+  const env = request.env;
+  
+  try {
+    const repositories = await getExternalRepositories(env);
+    const pendingRepos = repositories.filter(repo => repo.status === "pending");
+    const approvedRepos = repositories.filter(repo => repo.status === "approved");
+    const rejectedRepos = repositories.filter(repo => repo.status === "rejected");
+    
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Repositories - Admin</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="icon" href="https://kmmiio99o.pages.dev/icons/palette.png" type="image/png">
+    <script>(function(){try{var s=localStorage.getItem('theme');if(s?s==='dark':true){document.documentElement.classList.add('dark-mode');}}catch(e){document.documentElement.classList.add('dark-mode');}})();</script>
+    ${sharedStyles}
+    <style>
+        .repo-card {
+            background: var(--md-sys-color-background);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .repo-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            margin: 0 0 8px 0;
+        }
+        .repo-author {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .repo-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .repo-status.approved {
+            background: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+        }
+        .repo-status.pending {
+            background: var(--md-sys-color-warning-container);
+            color: var(--md-sys-color-on-warning-container);
+        }
+        .repo-description {
+            color: var(--md-sys-color-on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .repo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .repo-tag {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .repo-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .repo-url {
+            color: var(--md-sys-color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .repo-url:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    ${getNavbarHtml("admin", true)}
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1><span class="material-symbols-outlined">folder_shared</span> External Repositories</h1>
+                <p>Manage external repository submissions</p>
+            </div>
+
+            ${pendingRepos.length > 0 ? `
+            <div class="card" style="margin-bottom: 32px;">
+                <h2><span class="material-symbols-outlined">pending</span> Pending Repositories (${pendingRepos.length})</h2>
+                <div class="theme-grid">
+                    ${pendingRepos.map(repo => `
+                    <div class="repo-card">
+                        <div class="repo-header">
+                            <div>
+                                <h3 class="repo-title">${repo.name}</h3>
+                                <p class="repo-author">by ${repo.author}</p>
+                            </div>
+                            <span class="repo-status ${repo.status}">${repo.status}</span>
+                        </div>
+                        <p class="repo-description">${repo.description}</p>
+                        <div class="repo-actions">
+                            <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined">
+                                <span class="material-symbols-outlined">open_in_new</span> Visit Repository
+                            </a>
+                            <form method="POST" action="/admin/approve-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-filled">
+                                    <span class="material-symbols-outlined">check</span> Approve
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/reject-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">
+                                    <span class="material-symbols-outlined">close</span> Reject
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/delete-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this repository?')">
+                                    <span class="material-symbols-outlined">delete</span> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            ${approvedRepos.length > 0 ? `
+            <div class="card" style="margin-bottom: 32px;">
+                <h2><span class="material-symbols-outlined">check_circle</span> Approved Repositories (${approvedRepos.length})</h2>
+                <div class="theme-grid">
+                    ${approvedRepos.map(repo => `
+                    <div class="repo-card">
+                        <div class="repo-header">
+                            <div>
+                                <h3 class="repo-title">${repo.name}</h3>
+                                <p class="repo-author">by ${repo.author}</p>
+                            </div>
+                            <span class="repo-status ${repo.status}">${repo.status}</span>
+                        </div>
+                        <p class="repo-description">${repo.description}</p>
+                        <div class="repo-actions">
+                            <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined">
+                                <span class="material-symbols-outlined">open_in_new</span> Visit Repository
+                            </a>
+                            <form method="POST" action="/admin/delete-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this repository?')">
+                                    <span class="material-symbols-outlined">delete</span> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            ${rejectedRepos.length > 0 ? `
+            <div class="card" style="margin-bottom: 32px;">
+                <h2><span class="material-symbols-outlined">cancel</span> Rejected Repositories (${rejectedRepos.length})</h2>
+                <div class="theme-grid">
+                    ${rejectedRepos.map(repo => `
+                    <div class="repo-card">
+                        <div class="repo-header">
+                            <div>
+                                <h3 class="repo-title">${repo.name}</h3>
+                                <p class="repo-author">by ${repo.author}</p>
+                            </div>
+                            <span class="repo-status ${repo.status}">${repo.status}</span>
+                        </div>
+                        <p class="repo-description">${repo.description}</p>
+                        <div class="repo-actions">
+                            <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined">
+                                <span class="material-symbols-outlined">open_in_new</span> Visit Repository
+                            </a>
+                            <form method="POST" action="/admin/approve-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-filled">
+                                    <span class="material-symbols-outlined">check</span> Approve
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/delete-repo/${repo.id}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this repository?')">
+                                    <span class="material-symbols-outlined">delete</span> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            ${repositories.length === 0 ? `
+            <div class="empty-state">
+                <span class="material-symbols-outlined">folder_off</span>
+                <h3>No External Repositories</h3>
+                <p>No external repositories have been submitted yet.</p>
+            </div>
+            ` : ''}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1;"></div>
+                <p style="text-align: center; margin: 0;">&copy; 2025 ThemeHub. Discord Public Theme Repository.</p>
+                <a href="https://github.com/kmmiio99o/theme-marketplace" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--md-sys-color-on-surface-variant); text-decoration: none; border-radius: 8px; transition: background-color .2s ease;" title="GitHub Repository">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>`;
+
+    return new Response(html, {
+      headers: { "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Error loading external repositories:", error);
+    return new Response("Error loading repositories", { status: 500 });
+  }
+}
+
+export async function approveRepository(request) {
+  const env = request.env;
+  const { id } = request.params;
+  
+  try {
+    const repositories = await getExternalRepositories(env);
+    const repoIndex = repositories.findIndex(repo => repo.id === id);
+    
+    if (repoIndex === -1) {
+      return new Response("Repository not found", { status: 404 });
+    }
+    
+    repositories[repoIndex].status = "approved";
+    await env.THEMES.put("external_repositories", JSON.stringify(repositories, null, 2));
+    
+    const baseUrl = new URL(request.url).origin;
+    return Response.redirect(`${baseUrl}/admin/repositories`, 302);
+  } catch (error) {
+    console.error("Error approving repository:", error);
+    return new Response("Error approving repository", { status: 500 });
+  }
+}
+
+export async function rejectRepository(request) {
+  const env = request.env;
+  const { id } = request.params;
+  
+  try {
+    const repositories = await getExternalRepositories(env);
+    const repoIndex = repositories.findIndex(repo => repo.id === id);
+    
+    if (repoIndex === -1) {
+      return new Response("Repository not found", { status: 404 });
+    }
+    
+    repositories[repoIndex].status = "rejected";
+    await env.THEMES.put("external_repositories", JSON.stringify(repositories, null, 2));
+    
+    const baseUrl = new URL(request.url).origin;
+    return Response.redirect(`${baseUrl}/admin/repositories`, 302);
+  } catch (error) {
+    console.error("Error rejecting repository:", error);
+    return new Response("Error rejecting repository", { status: 500 });
+  }
+}
+
+export async function deleteRepository(request) {
+  const env = request.env;
+  const { id } = request.params;
+  
+  try {
+    const repositories = await getExternalRepositories(env);
+    const filteredRepos = repositories.filter(repo => repo.id !== id);
+    
+    await env.THEMES.put("external_repositories", JSON.stringify(filteredRepos, null, 2));
+    
+    const baseUrl = new URL(request.url).origin;
+    return Response.redirect(`${baseUrl}/admin/repositories`, 302);
+  } catch (error) {
+    console.error("Error deleting repository:", error);
+    return new Response("Error deleting repository", { status: 500 });
   }
 }

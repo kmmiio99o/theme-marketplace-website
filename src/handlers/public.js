@@ -1,65 +1,75 @@
 import {
-    getAllThemesFromGitHub,
-    saveThemeToGitHub,
-    getThemeFromGitHub,
+  getAllThemesFromGitHub,
+  saveThemeToGitHub,
+  getThemeFromGitHub,
 } from "../utils/github.js";
 
 // Helper functions for error display
 function getErrorIcon(errorType) {
-    const icons = {
-        authentication: "lock",
-        configuration: "settings",
-        network_error: "wifi_off",
-        timeout: "schedule",
-        permissions: "block",
-        repository_not_found: "folder_off",
-        validation: "rule",
-        preview_upload: "image_not_supported",
-        api_error: "api",
-        server_error: "dns",
-        unknown: "error"
-    };
-    return icons[errorType] || icons.unknown;
+  const icons = {
+    authentication: "lock",
+    configuration: "settings",
+    network_error: "wifi_off",
+    timeout: "schedule",
+    permissions: "block",
+    repository_not_found: "folder_off",
+    validation: "rule",
+    preview_upload: "image_not_supported",
+    api_error: "api",
+    server_error: "dns",
+    unknown: "error",
+  };
+  return icons[errorType] || icons.unknown;
 }
 
 function getErrorTitle(errorType) {
-    const titles = {
-        authentication: "Authentication Failed",
-        configuration: "Configuration Error",
-        network_error: "Network Error",
-        timeout: "Request Timeout",
-        permissions: "Permission Denied",
-        repository_not_found: "Repository Not Found",
-        validation: "Validation Error",
-        preview_upload: "Preview Upload Failed",
-        api_error: "GitHub API Error",
-        server_error: "Server Error",
-        unknown: "Submission Failed"
-    };
-    return titles[errorType] || titles.unknown;
+  const titles = {
+    authentication: "Authentication Failed",
+    configuration: "Configuration Error",
+    network_error: "Network Error",
+    timeout: "Request Timeout",
+    permissions: "Permission Denied",
+    repository_not_found: "Repository Not Found",
+    validation: "Validation Error",
+    preview_upload: "Preview Upload Failed",
+    api_error: "GitHub API Error",
+    server_error: "Server Error",
+    unknown: "Submission Failed",
+  };
+  return titles[errorType] || titles.unknown;
 }
 
 function getErrorHelp(errorType) {
-    const help = {
-        authentication: "Please check that your GitHub token is valid and has the necessary permissions.",
-        configuration: "The server configuration is missing required GitHub settings. Contact the administrator.",
-        network_error: "Please check your internet connection and try again.",
-        timeout: "The request took too long to complete. Please try again with a smaller file.",
-        permissions: "Your GitHub token doesn't have write permissions to this repository.",
-        repository_not_found: "The specified GitHub repository doesn't exist or isn't accessible.",
-        validation: "The theme data or file path is invalid. Please check your JSON format.",
-        preview_upload: "The preview image couldn't be uploaded. Try with a smaller image or different format.",
-        api_error: "GitHub's API returned an error. This might be temporary - please try again.",
-        server_error: "GitHub's servers are experiencing issues. Please try again later.",
-        unknown: "An unexpected error occurred. Please try again or contact support."
-    };
-    return help[errorType] || help.unknown;
+  const help = {
+    authentication:
+      "Please check that your GitHub token is valid and has the necessary permissions.",
+    configuration:
+      "The server configuration is missing required GitHub settings. Contact the administrator.",
+    network_error: "Please check your internet connection and try again.",
+    timeout:
+      "The request took too long to complete. Please try again with a smaller file.",
+    permissions:
+      "Your GitHub token doesn't have write permissions to this repository.",
+    repository_not_found:
+      "The specified GitHub repository doesn't exist or isn't accessible.",
+    validation:
+      "The theme data or file path is invalid. Please check your JSON format.",
+    preview_upload:
+      "The preview image couldn't be uploaded. Try with a smaller image or different format.",
+    api_error:
+      "GitHub's API returned an error. This might be temporary - please try again.",
+    server_error:
+      "GitHub's servers are experiencing issues. Please try again later.",
+    unknown:
+      "An unexpected error occurred. Please try again or contact support.",
+  };
+  return help[errorType] || help.unknown;
 }
 
 // Reusable function to generate the standard navbar HTML
 export function getNavbarHtml(activePage, isAdmin) {
-    const adminLink = isAdmin
-        ? `
+  const adminLink = isAdmin
+    ? `
         <a href="/admin/dashboard" class="nav-btn ${activePage === "admin" ? "active" : ""}">
             <span class="material-symbols-outlined">shield_person</span>
             <span>Admin Panel</span>
@@ -70,13 +80,13 @@ export function getNavbarHtml(activePage, isAdmin) {
                 <span>Logout</span>
             </button>
         </form>`
-        : `
+    : `
         <a href="/admin/login" class="nav-btn ${activePage === "admin" ? "active" : ""}">
             <span class="material-symbols-outlined">shield_person</span>
             <span>Admin</span>
         </a>`;
 
-    return `
+  return `
     <header>
         <div class="container">
             <nav class="navbar" role="navigation" aria-label="Main">
@@ -104,6 +114,14 @@ export function getNavbarHtml(activePage, isAdmin) {
                         <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
                         <span>Submit Theme</span>
                     </a>
+                    <a href="/submit-repo" class="nav-btn ${activePage === "submit-repo" ? "active" : ""}">
+                        <span class="material-symbols-outlined" aria-hidden="true">folder_shared</span>
+                        <span>Submit Repo</span>
+                    </a>
+                    <a href="/repositories" class="nav-btn ${activePage === "repositories" ? "active" : ""}">
+                        <span class="material-symbols-outlined" aria-hidden="true">folder_open</span>
+                        <span>Repositories</span>
+                    </a>
                     ${adminLink}
                     <button id="themeToggle" class="nav-btn theme-toggle">
                         <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
@@ -118,6 +136,8 @@ export function getNavbarHtml(activePage, isAdmin) {
                 <a href="/" class="nav-btn ${activePage === "home" ? "active" : ""}"><span class="material-symbols-outlined" aria-hidden="true">home</span><span>Home</span></a>
                 <a href="/build" class="nav-btn ${activePage === "building" ? "active" : ""}"><span class="material-symbols-outlined" aria-hidden="true">construction</span><span>Building</span></a>
                 <a href="/submit" class="nav-btn ${activePage === "submit" ? "active" : ""}"><span class="material-symbols-outlined" aria-hidden="true">add_circle</span><span>Submit Theme</span></a>
+                <a href="/submit-repo" class="nav-btn ${activePage === "submit-repo" ? "active" : ""}"><span class="material-symbols-outlined" aria-hidden="true">folder_shared</span><span>Submit Repo</span></a>
+                <a href="/repositories" class="nav-btn ${activePage === "repositories" ? "active" : ""}"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span><span>Repositories</span></a>
                 ${adminLink}
                 <button id="themeToggleMobile" class="nav-btn theme-toggle"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span><span>Light Mode</span></button>
             </div>
@@ -639,13 +659,28 @@ export const sharedStyles = `
 </style>
 `;
 
-export async function showHomePage(request) {
-    const env = request.env;
+export async function showHomePage(request, env) {
+  const formatThemeDisplay = (theme) => {
+    return {
+      ...theme,
+      displayName: theme.name,
+      displayAuthor:
+        theme.source === "external"
+          ? theme.author || theme.externalRepo?.author || "Unknown"
+          : theme.author || "Unknown",
+      displayDescription: theme.description || "No description available",
+    };
+  };
+  // env is already available as a parameter
 
-    try {
-        const themes = await getAllThemesFromGitHub(env, "approved");
+  try {
+    const themes = await getAllThemesFromGitHub(env, "approved");
+    const externalThemes = await fetchExternalThemes(env);
 
-        const html = `
+    // Combine themes from GitHub and external repositories
+    const allThemes = [...themes, ...externalThemes];
+
+    const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -700,42 +735,76 @@ export async function showHomePage(request) {
                 </div>
             </div>
 
-            ${themes.length > 0
+            ${
+              allThemes.length > 0
                 ? `
             <div class="theme-grid">
-                ${themes
-                    .map(
-                        (theme) => `
+                ${allThemes
+                  .map(
+                    (theme) => `
                 <div class="theme-card">
-                    ${theme.previewUrl
-                                ? `
+                    ${
+                      theme.previewUrl
+                        ? `
                     <div class="theme-preview">
                         <img src="${theme.previewUrl}" alt="${theme.name} Preview" loading="lazy" decoding="async" onerror="this.style.display='none'">
                     </div>
                     `
-                                : ""
-                            }
+                        : ""
+                    }
                     <div class="theme-header">
                         <h3 class="theme-title">${theme.name}</h3>
-                        <div class="theme-meta">
-                            <span><span class="material-symbols-outlined">calendar_today</span> ${theme.createdAt || "Unknown"}</span>
+                        <div class="theme-meta" style="display: flex; flex-direction: column; gap: 4px;">
+                            <span>
+                                <span class="material-symbols-outlined" style="font-size: 16px;">person</span>
+                                <strong>Author:</strong> ${theme.author || "Unknown"}
+                            </span>
+                            ${
+                              theme.source === "external" && theme.externalRepo
+                                ? `
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">folder_shared</span>
+                                <strong>Repository:</strong>
+                                <a href="${theme.externalRepo.url}" target="_blank" rel="noopener noreferrer"
+                                   style="color: var(--md-sys-color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                    ${theme.externalRepo.name}
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
+                                </a>
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">verified_user</span>
+                                <strong>Owner:</strong> ${theme.externalRepo.author || "Unknown"}
+                            </span>
+                            `
+                                : ""
+                            }
                         </div>
                     </div>
                     <div class="theme-body">
-                        <p class="theme-description">${theme.description}</p>
+                        <p class="theme-description">${theme.description || "No description available"}</p>
                     </div>
                     <div class="theme-actions">
                         <a href="/theme/${theme.id}" class="btn btn-filled">
                             <span class="material-symbols-outlined">visibility</span> View Details
                         </a>
+                        ${
+                          theme.source === "external"
+                            ? `
+                        <a href="${theme.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined">
+                            <span class="material-symbols-outlined">open_in_new</span> View Raw
+                        </a>
+                        `
+                            : `
                         <button class="btn btn-copy" onclick="copyThemeLink('${theme.id}')">
                             <span class="material-symbols-outlined">link</span> Copy Raw Link
                         </button>
+                        `
+                        }
                     </div>
                 </div>
                 `,
-                    )
-                    .join("")}
+                  )
+                  .join("")}
             </div>
             `
                 : `
@@ -767,7 +836,7 @@ export async function showHomePage(request) {
     </footer>
 
     <script>
-        const allThemes = ${JSON.stringify(themes)};
+        const allThemes = ${JSON.stringify(allThemes)};
         document.addEventListener('DOMContentLoaded', function() {
             const themeSearchInput = document.getElementById('themeSearch');
             const themeGrid = document.querySelector('.theme-grid');
@@ -787,17 +856,31 @@ export async function showHomePage(request) {
                     <div class="theme-header">
                         <h3 class="theme-title">\${theme.name}</h3>
                         <div class="theme-meta">
-                            <span><span class="material-symbols-outlined">calendar_today</span> \${theme.createdAt || "Unknown"}</span>
+                            \${theme.source === "external" ? \`
+                            <span><span class="material-symbols-outlined">folder_shared</span> \${theme.externalRepo.author}</span>
+                            \` : ""}
                         </div>
                     </div>
                     <div class="theme-body">
                         <p class="theme-description">\${theme.description}</p>
+                        \${theme.source === "external" ? \`
+                        <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">folder_open</span>
+                            From: <a href="\${theme.externalRepo.url}" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary);">\${theme.externalRepo.name}</a>
+                        </p>
+                        \` : ""}
                     </div>
                     <div class="theme-actions">
                         <a href="/theme/\${theme.id}" class="btn btn-filled">View Details</a>
+                        \${theme.source === "external" ? \`
+                        <a href="\${theme.externalRepo.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined">
+                            <span class="material-symbols-outlined">open_in_new</span> Visit Repo
+                        </a>
+                        \` : \`
                         <button class="btn btn-outlined" onclick="copyThemeLink('\${theme.id}')">
                             <span class="material-symbols-outlined">link</span> Copy Link
                         </button>
+                        \`}
                     </div>
                 </div>
                 \`).join('');
@@ -805,10 +888,15 @@ export async function showHomePage(request) {
 
             function filterThemes(query) {
                 const lowerCaseQuery = query.toLowerCase();
-                return allThemes.filter(theme =>
-                    theme.name.toLowerCase().includes(lowerCaseQuery) ||
-                    theme.description.toLowerCase().includes(lowerCaseQuery)
-                );
+                return allThemes.filter(theme => {
+                    const name = theme.source === "external" ? theme.themeData.name : theme.name;
+                    const description = theme.source === "external" ? theme.themeData.description : (theme.description || "");
+                    const author = theme.source === "external" ? (theme.themeData.author || theme.externalRepo?.author || "") : (theme.author || "");
+
+                    return name.toLowerCase().includes(lowerCaseQuery) ||
+                           description.toLowerCase().includes(lowerCaseQuery) ||
+                           author.toLowerCase().includes(lowerCaseQuery);
+                });
             }
 
             // Debounce input to reduce work on slower devices
@@ -859,22 +947,22 @@ export async function showHomePage(request) {
 </body>
 </html>`;
 
-        return new Response(html, {
-            headers: { "Content-Type": "text/html" },
-        });
-    } catch (error) {
-        console.error("Error loading home page:", error);
-        return new Response("Error loading themes", { status: 500 });
-    }
+    return new Response(html, {
+      headers: { "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Error loading home page:", error);
+    return new Response("Error loading themes", { status: 500 });
+  }
 }
 
 export async function showSubmitForm(request) {
-    const url = new URL(request.url);
-    const message = url.searchParams.get("message");
-    const isError = url.searchParams.get("error") === "1";
-    const errorType = url.searchParams.get("errorType") || "unknown";
+  const url = new URL(request.url);
+  const message = url.searchParams.get("message");
+  const isError = url.searchParams.get("error") === "1";
+  const errorType = url.searchParams.get("errorType") || "unknown";
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1233,6 +1321,7 @@ export async function showSubmitForm(request) {
             background: rgba(33, 150, 243, 0.15);
             color: #64b5f6;
         }
+
     </style>
 </head>
 <body>
@@ -1245,32 +1334,41 @@ export async function showSubmitForm(request) {
                 <p>Share your professionally designed theme with the community</p>
             </div>
 
-            ${message
-            ? `
+            ${
+              message
+                ? `
             <div class="alert ${isError ? "alert-danger" : "alert-success"} ${isError ? `alert-${errorType}` : ""}">
-                <div class="alert-content">
-                    <div class="alert-icon">
-                        <span class="material-symbols-outlined">${isError ? getErrorIcon(errorType) : "check_circle"}</span>
+                <div class="alert-content" style="background: ${isError ? "var(--md-sys-color-error-container)" : "var(--md-sys-color-success-container)"}; border-radius: 12px; border: 1px solid ${isError ? "var(--md-sys-color-error)" : "var(--md-sys-color-success)"}">
+                    <div class="alert-icon" style="background: ${isError ? "var(--md-sys-color-error)" : "var(--md-sys-color-success)"}; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 20px;">
+                        <span class="material-symbols-outlined" style="color: ${isError ? "var(--md-sys-color-on-error)" : "var(--md-sys-color-on-success)"}">${isError ? getErrorIcon(errorType) : "check_circle"}</span>
                     </div>
                     <div class="alert-text">
-                        <div class="alert-title">${isError ? getErrorTitle(errorType) : "Success!"}</div>
-                        <div class="alert-message">${message}</div>
-                        ${isError && errorType !== "unknown" ? `
+                        <div class="alert-title" style="color: ${isError ? "var(--md-sys-color-on-error-container)" : "var(--md-sys-color-on-success-container)"}; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px;">${isError ? getErrorTitle(errorType) : "Success!"}</div>
+                        <div class="alert-message" style="color: ${isError ? "var(--md-sys-color-on-error-container)" : "var(--md-sys-color-on-success-container)"};">${message}</div>
+                        ${
+                          isError && errorType !== "unknown"
+                            ? `
                         <div class="alert-help">
                             ${getErrorHelp(errorType)}
                         </div>
-                        ` : ""}
-                        ${!isError ? `
+                        `
+                            : ""
+                        }
+                        ${
+                          !isError
+                            ? `
                         <div class="alert-help">
                             Your theme is now in the pending queue. Administrators will review it before making it available to the public. You can check back later to see if it's been approved!
                         </div>
-                        ` : ""}
+                        `
+                            : ""
+                        }
                     </div>
                 </div>
             </div>
             `
-            : ""
-        }
+                : ""
+            }
 
             <div class="card">
                 <form method="POST" action="/submit" enctype="multipart/form-data">
@@ -1300,8 +1398,29 @@ export async function showSubmitForm(request) {
                         </div>
                                 <div id="jsonStatus" style="margin-top:8px; font-size:0.9rem; color: var(--md-sys-color-on-surface-variant);"></div>
                             </div>
+
                         </div>
                         <div class="upload-sections-container">
+                            <div class="json-editor-section">
+                                <div class="form-group">
+                                    <label class="form-label" for="repositoryUrl">Theme Link</label>
+                                    <div class="json-toolbar">
+                                        <button type="button" id="btnValidateUrl" class="btn btn-outlined"><span class="material-symbols-outlined">link_check</span> Validate URL</button>
+                                        <button type="button" id="btnCopyUrl" class="btn btn-outlined"><span class="material-symbols-outlined">content_copy</span> Copy</button>
+                                    </div>
+                                    <div class="code-editor">
+                                        <div class="editor-inner">
+                                            <input type="url"
+                                                class="form-control"
+                                                id="repositoryUrl"
+                                                name="repositoryUrl"
+                                                style="width: 100%; min-height: 48px; resize: none; padding: 14px 16px; border: none; outline: none; background: transparent; font-family: 'Roboto Mono', monospace; font-size: 0.95rem; line-height: 1.5; color: var(--md-sys-color-on-surface); caret-color: var(--md-sys-color-primary);"
+                                                placeholder="https://raw.githubusercontent.com/username/repo/main/theme.json">
+                                        </div>
+                                    </div>
+                                    <div id="urlStatus" style="margin-top:8px; font-size:0.9rem; color: var(--md-sys-color-on-surface-variant);"></div>
+                                </div>
+                            </div>
                         <div class="form-group">
                                 <div class="upload-section">
                                     <div class="upload-section-header">
@@ -1396,11 +1515,24 @@ export async function showSubmitForm(request) {
             let editorFontSize = 0.95; // rem
 
             function setStatus(message, ok = true) {
-                jsonStatus.textContent = message;
-                jsonStatus.style.color = ok ? 'var(--md-sys-color-on-success-container)' : 'var(--md-sys-color-on-error-container)';
-                jsonStatus.style.background = ok ? 'var(--md-sys-color-success-container)' : 'var(--md-sys-color-error-container)';
-                jsonStatus.style.padding = '8px 12px';
-                jsonStatus.style.borderRadius = '8px';
+                const successColor = 'var(--md-sys-color-success)';
+                const errorColor = 'var(--md-sys-color-error)';
+                const successBg = 'var(--md-sys-color-success-container)';
+                const errorBg = 'var(--md-sys-color-error-container)';
+                const successText = 'var(--md-sys-color-on-success-container)';
+                const errorText = 'var(--md-sys-color-on-error-container)';
+
+                jsonStatus.innerHTML =
+                    '<div style="display: flex; align-items: center; gap: 8px; background: ' +
+                    (ok ? successBg : errorBg) +
+                    '; padding: 12px; border-radius: 8px; border: 1px solid ' +
+                    (ok ? successColor : errorColor) +
+                    '"><span class="material-symbols-outlined" style="color: ' +
+                    (ok ? successColor : errorColor) +
+                    '">' + (ok ? 'check_circle' : 'error') +
+                    '</span><span style="color: ' +
+                    (ok ? successText : errorText) +
+                    '">' + message + '</span></div>';
             }
 
             btnValidateJson.addEventListener('click', () => {
@@ -1428,7 +1560,6 @@ export async function showSubmitForm(request) {
                     "description": "A sleek dark theme with vibrant accents and modern design elements. Perfect for Discord users who prefer a dark interface with colorful highlights.",
                     "author": "ThemeHub Community",
                     "version": "1.0.0",
-                    "createdAt": new Date().toISOString().split('T')[0],
                     "colors": {
                         "primary": "#4361ee",
                         "secondary": "#3f37c9",
@@ -1592,148 +1723,943 @@ export async function showSubmitForm(request) {
                     reader.readAsDataURL(file);
                 }
             }
+
+            // Theme URL validation and copy functionality
+            const btnValidateUrl = document.getElementById('btnValidateUrl');
+            const btnCopyUrl = document.getElementById('btnCopyUrl');
+            const repositoryUrl = document.getElementById('repositoryUrl');
+            const urlStatus = document.getElementById('urlStatus');
+
+            function setUrlStatus(message, ok = true) {
+                const successColor = 'var(--md-sys-color-success)';
+                const errorColor = 'var(--md-sys-color-error)';
+                const successBg = 'var(--md-sys-color-success-container)';
+                const errorBg = 'var(--md-sys-color-error-container)';
+                const successText = 'var(--md-sys-color-on-success-container)';
+                const errorText = 'var(--md-sys-color-on-error-container)';
+
+                urlStatus.innerHTML =
+                    '<div style="display: flex; align-items: center; gap: 8px; background: ' +
+                    (ok ? successBg : errorBg) +
+                    '; padding: 12px; border-radius: 8px; border: 1px solid ' +
+                    (ok ? successColor : errorColor) +
+                    '"><span class="material-symbols-outlined" style="color: ' +
+                    (ok ? successColor : errorColor) +
+                    '">' + (ok ? 'check_circle' : 'error') +
+                    '</span><span style="color: ' +
+                    (ok ? successText : errorText) +
+                    '">' + message + '</span></div>';
+            }
+
+            btnValidateUrl.addEventListener('click', () => {
+                const url = repositoryUrl.value.trim();
+                try {
+                    new URL(url);
+                    if (url.startsWith('https://raw.githubusercontent.com/') && url.endsWith('.json')) {
+                        setUrlStatus('Valid theme URL format');
+                    } else {
+                        setUrlStatus('URL must be a raw GitHub JSON file link', false);
+                    }
+                } catch (e) {
+                    setUrlStatus('Invalid URL format', false);
+                }
+            });
+
+            btnCopyUrl.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(repositoryUrl.value);
+                    setUrlStatus('URL copied to clipboard');
+                } catch (e) {
+                    setUrlStatus('Failed to copy URL: ' + e.message, false);
+                }
+            });
         });
     </script>
 </body>
 </html>`;
 
-    return new Response(html, {
-        headers: { "Content-Type": "text/html" },
-    });
+  return new Response(html, {
+    headers: { "Content-Type": "text/html" },
+  });
 }
 
-export async function handleThemeSubmission(request) {
-    const env = request.env;
+export async function showSubmitRepoForm(request) {
+  const url = new URL(request.url);
+  const message = url.searchParams.get("message");
+  const isError = url.searchParams.get("error") === "1";
 
-    try {
-        const formData = await request.formData();
-        const themeData = formData.get("themeData");
-        const previewImage = formData.get("previewImage");
-
-        if (!themeData) {
-            const baseUrl = new URL(request.url).origin;
-            return Response.redirect(
-                `${baseUrl}/submit?error=1&message=Please provide theme data`,
-                302,
-            );
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit External Repository - ThemeHub</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="icon" href="https://kmmiio99o.pages.dev/icons/palette.png" type="image/png">
+    <script>(function(){try{var s=localStorage.getItem('theme');if(s?s==='dark':true){document.documentElement.classList.add('dark-mode');}}catch(e){document.documentElement.classList.add('dark-mode');}})();</script>
+    ${sharedStyles}
+    <style>
+        .repo-form-container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-
-        // Validate GitHub env configuration
-        const missing = [];
-        if (!env.GITHUB_TOKEN) missing.push("GITHUB_TOKEN");
-        if (!env.GITHUB_OWNER) missing.push("GITHUB_OWNER");
-        if (!env.GITHUB_REPO) missing.push("GITHUB_REPO");
-        if (missing.length) {
-            console.error("Missing GitHub ENV:", missing.join(", "));
-            const baseUrl = new URL(request.url).origin;
-            return Response.redirect(
-                `${baseUrl}/submit?error=1&message=Missing GitHub configuration on server: ${encodeURIComponent(missing.join(", "))}`,
-                302,
-            );
+        .form-group {
+            margin-bottom: 24px;
         }
-
-        let theme;
-        try {
-            theme = JSON.parse(themeData);
-        } catch (e) {
-            const baseUrl = new URL(request.url).origin;
-            return Response.redirect(
-                `${baseUrl}/submit?error=1&message=${encodeURIComponent("Invalid JSON format: " + e.message)}`,
-                302,
-            );
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
         }
-
-        // Add required fields
-        if (!theme.name) {
-            theme.name = "Untitled Theme";
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-surface);
         }
-        if (!theme.description) {
-            theme.description = "No description provided";
+        .form-control:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
+        .submit-options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .submit-option {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid var(--md-sys-color-outline);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--md-sys-color-background);
+        }
+        .submit-option:hover {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+        }
+        .submit-option.active {
+            border-color: var(--md-sys-color-primary);
+            background: var(--md-sys-color-primary-container);
+        }
+        .submit-option h3 {
+            margin: 0 0 8px 0;
+            color: var(--md-sys-color-on-surface);
+        }
+        .submit-option p {
+            margin: 0;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    ${getNavbarHtml("submit-repo", false)}
 
-        // Add metadata
-        theme.createdAt = new Date().toISOString().split("T")[0];
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1><span class="material-symbols-outlined">cloud_upload</span> Submit External Repository</h1>
+                <p>Add external repositories with themes to our marketplace</p>
+            </div>
 
-        // Handle preview image if uploaded
-        if (previewImage && previewImage.size > 0) {
-            const arrayBuffer = await previewImage.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
-            // Chunked base64 encoding to avoid call stack overflow
-            function uint8ToBase64(u8) {
-                let binary = "";
-                const chunkSize = 0x8000; // 32KB
-                for (let i = 0; i < u8.length; i += chunkSize) {
-                    const chunk = u8.subarray(i, i + chunkSize);
-                    binary += String.fromCharCode.apply(null, chunk);
-                }
-                // Use Unicode-safe base64 encoding
-                try {
-                    return btoa(binary);
-                } catch (e) {
-                    // Fallback for Unicode characters
-                    const utf8Bytes = new TextEncoder().encode(binary);
-                    let safeBinary = '';
-                    for (let i = 0; i < utf8Bytes.length; i++) {
-                        safeBinary += String.fromCharCode(utf8Bytes[i]);
-                    }
-                    return btoa(safeBinary);
-                }
+            ${
+              message
+                ? `
+            <div class="alert ${isError ? "alert-danger" : "alert-success"}">
+                <div class="alert-content">
+                    <div class="alert-icon">
+                        <span class="material-symbols-outlined">${isError ? "error" : "check_circle"}</span>
+                    </div>
+                    <div class="alert-text">
+                        <div class="alert-title">${isError ? "Error" : "Success!"}</div>
+                        <div class="alert-message">${message}</div>
+                    </div>
+                </div>
+            </div>
+            `
+                : ""
             }
-            const base64String = uint8ToBase64(uint8Array);
-            theme.previewImage = `${previewImage.type};base64,${base64String}`;
-        }
 
-        const result = await saveThemeToGitHub(env, theme, "pending");
+            <div class="card">
+                <form method="POST" action="/submit-repo">
+                    <div class="form-group">
+                        <label class="form-label" for="repoUrl">Repository URL</label>
+                        <input type="url" class="form-control" id="repoUrl" name="repoUrl" placeholder="https://github.com/username/repository" required>
+                        <p style="font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); margin-top: 8px;">
+                            Enter the URL of your repository. We'll automatically fetch the repository name, author, and description.
+                        </p>
+                    </div>
 
-        const baseUrl = new URL(request.url).origin;
-        if (result.success) {
-            return Response.redirect(
-                `${baseUrl}/submit?message=${encodeURIComponent("Theme submitted successfully! Your theme has been saved to GitHub and is now awaiting admin approval. You'll be able to see it on the main page once it's approved.")}`,
-                302,
-            );
-        } else {
-            // Create detailed error message with error type and details
-            let errorMessage = result.message;
-            if (result.details) {
-                errorMessage += ` (${result.details})`;
-            }
-            
-            return Response.redirect(
-                `${baseUrl}/submit?error=1&errorType=${encodeURIComponent(result.error || 'unknown')}&message=${encodeURIComponent(errorMessage)}`,
-                302,
-            );
-        }
-    } catch (error) {
-        console.error("Theme submission error:", error);
-        const baseUrl = new URL(request.url).origin;
-        return Response.redirect(
-            `${baseUrl}/submit?error=1&message=${encodeURIComponent("Unexpected server error during submission.")}`,
-            302,
-        );
+                    <button type="submit" class="btn btn-filled">
+                        <span class="material-symbols-outlined">send</span> Submit Repository
+                    </button>
+                </form>
+            </div>
+
+            <div class="card guidelines-card">
+                <h3><span class="material-symbols-outlined">info</span> Repository Submission Guidelines</h3>
+                <ul>
+                    <li>Repository must be publicly accessible</li>
+                    <li>Should contain theme files in JSON format</li>
+                    <li>Include a clear description of available themes</li>
+                    <li>Repository will be reviewed before being added to the marketplace</li>
+                    <li>Only legitimate theme repositories will be accepted</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1;"></div>
+                <p style="text-align: center; margin: 0;">&copy; 2025 ThemeHub. Discord Public Theme Repository.</p>
+                <a href="https://github.com/kmmiio99o/theme-marketplace" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--md-sys-color-on-surface-variant); text-decoration: none; border-radius: 8px; transition: background-color .2s ease;" title="GitHub Repository">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: { "Content-Type": "text/html" },
+  });
+}
+
+// Function to save external repository to JSON file
+async function saveExternalRepo(env, repoData) {
+  try {
+    // Get existing repositories from KV storage
+    const existingRepos = await env.THEMES.get("external_repositories");
+    let repositories = [];
+
+    if (existingRepos) {
+      try {
+        repositories = JSON.parse(existingRepos);
+      } catch (e) {
+        console.warn("Failed to parse existing repositories, starting fresh");
+        repositories = [];
+      }
     }
+
+    // Add new repository
+    repositories.push(repoData);
+
+    // Save back to KV storage
+    await env.THEMES.put(
+      "external_repositories",
+      JSON.stringify(repositories, null, 2),
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving external repository:", error);
+    return {
+      success: false,
+      message: "Failed to save repository data",
+    };
+  }
+}
+
+// Function to get external repositories
+export async function getExternalRepositories(env) {
+  try {
+    const existingRepos = await env.THEMES.get("external_repositories");
+    if (!existingRepos) {
+      return [];
+    }
+    return JSON.parse(existingRepos);
+  } catch (error) {
+    console.error("Error loading external repositories:", error);
+    return [];
+  }
+}
+
+// Function to fetch themes from external repositories
+export async function fetchExternalThemes(env) {
+  try {
+    const repositories = await getExternalRepositories(env);
+    const approvedRepos = repositories.filter(
+      (repo) => repo.status === "approved",
+    );
+    const externalThemes = [];
+
+    for (const repo of approvedRepos) {
+      try {
+        // Try to fetch themes from the repository
+        const themes = await fetchThemesFromRepository(repo, env);
+        externalThemes.push(...themes);
+      } catch (error) {
+        console.warn(`Failed to fetch themes from ${repo.url}:`, error);
+        // Continue with other repositories even if one fails
+      }
+    }
+
+    return externalThemes;
+  } catch (error) {
+    console.error("Error fetching external themes:", error);
+    return [];
+  }
+}
+
+// Function to fetch repository information from URL
+async function fetchRepositoryInfo(repoUrl, env) {
+  try {
+    const url = new URL(repoUrl);
+    let apiUrl = "";
+
+    if (url.hostname.includes("github.com")) {
+      // GitHub API
+      const pathParts = url.pathname.split("/").filter((part) => part);
+      if (pathParts.length >= 2) {
+        const owner = pathParts[0];
+        const repoName = pathParts[1];
+        apiUrl = `https://api.github.com/repos/${owner}/${repoName}`;
+      }
+    } else if (url.hostname.includes("gitlab.com")) {
+      // GitLab API
+      const pathParts = url.pathname.split("/").filter((part) => part);
+      if (pathParts.length >= 2) {
+        const owner = pathParts[0];
+        const repoName = pathParts[1];
+        apiUrl = `https://gitlab.com/api/v4/projects/${owner}%2F${repoName}`;
+      }
+    } else if (url.hostname.includes("codeberg.org")) {
+      // Codeberg API
+      const pathParts = url.pathname.split("/").filter((part) => part);
+      if (pathParts.length >= 2) {
+        const owner = pathParts[0];
+        const repoName = pathParts[1];
+        apiUrl = `https://codeberg.org/api/v1/repos/${owner}/${repoName}`;
+      }
+    }
+
+    if (!apiUrl) {
+      throw new Error("Unsupported repository service");
+    }
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        "User-Agent": "ThemeHub",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch repository: ${response.status}`);
+    }
+
+    const repoData = await response.json();
+
+    // Extract information based on service
+    let name, author, description;
+
+    if (
+      url.hostname.includes("github.com") ||
+      url.hostname.includes("codeberg.org")
+    ) {
+      name = repoData.name;
+      author = repoData.owner.login;
+      description = repoData.description || "No description available";
+    } else if (url.hostname.includes("gitlab.com")) {
+      name = repoData.name;
+      author = repoData.namespace.name;
+      description = repoData.description || "No description available";
+    }
+
+    return {
+      name: name || "Unknown Repository",
+      author: author || "Unknown Author",
+      description: description || "No description available",
+    };
+  } catch (error) {
+    console.error(`Error fetching repository info from ${repoUrl}:`, error);
+    return null;
+  }
+}
+
+// Function to fetch themes from a specific repository
+async function fetchThemesFromRepository(repo, env) {
+  try {
+    if (!repo || !repo.url) {
+      console.error("Invalid repo object:", repo);
+      throw new Error("Invalid repository object");
+    }
+
+    const url = new URL(repo.url);
+    let owner, repoName;
+
+    if (url.hostname.includes("github.com")) {
+      const pathParts = url.pathname.split("/").filter(Boolean);
+      if (pathParts.length >= 2) {
+        owner = pathParts[0];
+        repoName = pathParts[1];
+      }
+    } else {
+      throw new Error("Unsupported repository service for recursive search");
+    }
+
+    if (!owner || !repoName) {
+      throw new Error("Could not determine repository owner or name");
+    }
+
+    const jsonFiles = await fetchRepoContentsRecursive(
+      owner,
+      repoName,
+      "",
+      env,
+    );
+    const themes = [];
+
+    for (const item of jsonFiles) {
+      try {
+        const themeResponse = await fetch(item.download_url, {
+          headers: {
+            Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+            "User-Agent": "ThemeHub",
+          },
+        });
+
+        if (themeResponse.ok) {
+          const themeData = await themeResponse.json();
+          if (themeData) {
+            const themeName =
+              themeData.name ||
+              item.name.replace(".json", "").replace(/_/g, " ");
+            const themeMetadata = {
+              id: `external_${repo.id}_${item.name.replace(".json", "")}`,
+              source: "external",
+              name: themeName,
+              author: themeData.author || repo.author || "Unknown",
+              description: themeData.description || `Theme from ${repo.name}`,
+              url: item.download_url,
+              repositoryUrl: repo.url,
+              previewUrl: themeData.preview_url || themeData.previewUrl,
+              externalRepo: {
+                name: repo.name || "",
+                url: repo.url || "",
+                author: repo.author || "Unknown",
+                description: repo.description || "",
+              },
+              themeData: themeData,
+            };
+            themes.push(themeMetadata);
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to parse theme ${item.name}:`, error);
+      }
+    }
+
+    return themes;
+  } catch (error) {
+    console.error(`Error fetching themes from repository ${repo.url}:`, error);
+    return [];
+  }
+}
+
+// Helper function to recursively fetch all JSON files from a repository
+async function fetchRepoContentsRecursive(owner, repo, path, env) {
+  try {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    if (!env || !env.GITHUB_TOKEN) {
+      throw new Error("GitHub token not found in environment");
+    }
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        "User-Agent": "ThemeHub",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      throw new Error(
+        `Failed to fetch repository contents for ${path}: ${response.status} - ${errorText}`,
+      );
+    }
+
+    const contents = await response.json();
+
+    let jsonFiles = [];
+
+    for (const item of contents) {
+      if (
+        item.type === "file" &&
+        (item.name.endsWith(".json") || item.name.endsWith(".theme.css"))
+      ) {
+        jsonFiles.push(item);
+      } else if (item.type === "dir") {
+        try {
+          const subDirFiles = await fetchRepoContentsRecursive(
+            owner,
+            repo,
+            item.path,
+            env,
+          );
+          jsonFiles = jsonFiles.concat(subDirFiles);
+        } catch (error) {}
+      }
+    }
+
+    return jsonFiles;
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function showRepositoriesPage(request) {
+  const env = request.env;
+
+  try {
+    const externalThemes = await fetchExternalThemes(env);
+    const internalThemes = []; // Add your internal themes fetching logic here
+    const allThemes = [...internalThemes, ...externalThemes];
+    const repositories = await getExternalRepositories(env);
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Repositories - ThemeHub</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="icon" href="https://kmmiio99o.pages.dev/icons/palette.png" type="image/png">
+    <script>(function(){try{var s=localStorage.getItem('theme');if(s?s==='dark':true){document.documentElement.classList.add('dark-mode');}}catch(e){document.documentElement.classList.add('dark-mode');}})();</script>
+    ${sharedStyles}
+    <style>
+        .repo-card {
+            background: var(--md-sys-color-background);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+        .repo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--md-sys-color-shadow);
+        }
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .repo-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            margin: 0 0 8px 0;
+        }
+        .repo-author {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .repo-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .repo-status.approved {
+            background: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+        }
+        .repo-status.pending {
+            background: var(--md-sys-color-warning-container);
+            color: var(--md-sys-color-on-warning-container);
+        }
+        .repo-description {
+            color: var(--md-sys-color-on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .repo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .repo-tag {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .repo-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .repo-url {
+            color: var(--md-sys-color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .repo-url:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    ${getNavbarHtml("repositories", false)}
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1><span class="material-symbols-outlined">folder_shared</span> External Repositories</h1>
+                <p>Discover theme collections from external repositories</p>
+            </div>
+
+            ${
+              repositories.length > 0
+                ? `
+            <div class="theme-grid">
+                ${(
+                  await Promise.all(
+                    repositories.map(async (repo) => {
+                      let themeInfo = "";
+                      try {
+                        const themes = await fetchThemesFromRepository(
+                          repo,
+                          env,
+                        );
+                        if (themes.length > 0) {
+                          themeInfo = `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--md-sys-color-outline);"><h4>Themes Found (${themes.length}):</h4><ul>${themes.map((t) => `<li>${t.name}</li>`).join("")}</ul></div>`;
+                        } else {
+                          themeInfo = `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--md-sys-color-outline);"><p>No valid themes found in this repository.</p></div>`;
+                        }
+                      } catch (error) {
+                        themeInfo = `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--md-sys-color-outline);"><p style="color: var(--md-sys-color-error);"><b>Error fetching themes:</b> ${error.message}</p></div>`;
+                      }
+
+                      return `
+                <div class="repo-card">
+                    <div class="repo-header">
+                        <div>
+                            <h3 class="repo-title">${repo.name}</h3>
+                            <p class="repo-author">by ${repo.author}</p>
+                        </div>
+                        <span class="repo-status ${repo.status}">${repo.status}</span>
+                    </div>
+                    <p class="repo-description">${repo.description}</p>
+                    ${
+                      repo.tags && repo.tags.length > 0
+                        ? `
+                    <div class="repo-tags">
+                        ${repo.tags.map((tag) => `<span class="repo-tag">${tag}</span>`).join("")}
+                    </div>
+                    `
+                        : ""
+                    }
+                    <div class="repo-actions">
+                        <a href="${repo.url}" target="_blank" rel="noopener noreferrer" class="btn btn-filled">
+                            <span class="material-symbols-outlined">open_in_new</span> Visit Repository
+                        </a>
+                    </div>
+                    ${themeInfo}
+                </div>
+                `;
+                    }),
+                  )
+                ).join("")}
+            </div>
+            `
+                : `
+            <div class="empty-state">
+                <span class="material-symbols-outlined">folder_off</span>
+                <h3>No External Repositories</h3>
+                <p>No external repositories have been submitted yet.</p>
+                <a href="/submit-repo" class="btn btn-filled">
+                    <span class="material-symbols-outlined">add</span> Submit First Repository
+                </a>
+            </div>
+            `
+            }
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1;"></div>
+                <p style="text-align: center; margin: 0;">&copy; 2025 ThemeHub. Discord Public Theme Repository.</p>
+                <a href="https://github.com/kmmiio99o/theme-marketplace" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; color: var(--md-sys-color-on-surface-variant); text-decoration: none; border-radius: 8px; transition: background-color .2s ease;" title="GitHub Repository">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>`;
+
+    return new Response(html, {
+      headers: { "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Error loading repositories page:", error);
+    return new Response("Error loading repositories", { status: 500 });
+  }
+}
+
+export async function handleRepoSubmission(request, env) {
+  try {
+    const formData = await request.formData();
+    const repoUrl = formData.get("repoUrl");
+
+    if (!repoUrl) {
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit-repo?error=1&message=Please provide a repository URL`,
+        302,
+      );
+    }
+
+    // Validate URL format
+    try {
+      new URL(repoUrl);
+    } catch (e) {
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit-repo?error=1&message=Please provide a valid URL`,
+        302,
+      );
+    }
+
+    // Fetch repository information automatically
+    const repoInfo = await fetchRepositoryInfo(repoUrl, env);
+    if (!repoInfo) {
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit-repo?error=1&message=Could not fetch repository information. Please ensure the repository is public and accessible.`,
+        302,
+      );
+    }
+
+    // Create repository object
+    const repoData = {
+      id: crypto.randomUUID(),
+      name: repoInfo.name,
+      url: repoUrl,
+      description: repoInfo.description,
+      author: repoInfo.author,
+      tags: [],
+      status: "pending",
+    };
+
+    // Save to external repositories JSON file
+    const result = await saveExternalRepo(env, repoData);
+
+    const baseUrl = new URL(request.url).origin;
+    if (result.success) {
+      return Response.redirect(
+        `${baseUrl}/submit-repo?message=${encodeURIComponent("External repository submitted successfully! It will be reviewed before being added to the marketplace.")}`,
+        302,
+      );
+    } else {
+      return Response.redirect(
+        `${baseUrl}/submit-repo?error=1&message=${encodeURIComponent(result.message || "Failed to submit repository")}`,
+        302,
+      );
+    }
+  } catch (error) {
+    console.error("Repository submission error:", error);
+    const baseUrl = new URL(request.url).origin;
+    return Response.redirect(
+      `${baseUrl}/submit-repo?error=1&message=${encodeURIComponent("Unexpected server error during submission.")}`,
+      302,
+    );
+  }
+}
+
+export async function handleThemeSubmission(request, env) {
+  try {
+    const formData = await request.formData();
+    const themeData = formData.get("themeData");
+    const previewImage = formData.get("previewImage");
+    const repositoryUrl = formData.get("repositoryUrl");
+
+    if (!themeData) {
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit?error=1&message=Please provide theme data`,
+        302,
+      );
+    }
+
+    // Validate GitHub env configuration
+    const missing = [];
+    if (!env.GITHUB_TOKEN) missing.push("GITHUB_TOKEN");
+    if (!env.GITHUB_OWNER) missing.push("GITHUB_OWNER");
+    if (!env.GITHUB_REPO) missing.push("GITHUB_REPO");
+    if (missing.length) {
+      console.error("Missing GitHub ENV:", missing.join(", "));
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit?error=1&message=Missing GitHub configuration on server: ${encodeURIComponent(missing.join(", "))}`,
+        302,
+      );
+    }
+
+    let theme;
+    try {
+      theme = JSON.parse(themeData);
+    } catch (e) {
+      const baseUrl = new URL(request.url).origin;
+      return Response.redirect(
+        `${baseUrl}/submit?error=1&message=${encodeURIComponent("Invalid JSON format: " + e.message)}`,
+        302,
+      );
+    }
+
+    // Add required fields
+    if (!theme.name) {
+      theme.name = "Untitled Theme";
+    }
+    if (!theme.description) {
+      theme.description = "No description provided";
+    }
+
+    // Add repository URL if provided
+    if (repositoryUrl && repositoryUrl.trim() !== "") {
+      theme.repositoryUrl = repositoryUrl.trim();
+    }
+
+    // Handle preview image if uploaded
+    if (previewImage && previewImage.size > 0) {
+      const arrayBuffer = await previewImage.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      // Chunked base64 encoding to avoid call stack overflow
+      function uint8ToBase64(u8) {
+        let binary = "";
+        const chunkSize = 0x8000; // 32KB
+        for (let i = 0; i < u8.length; i += chunkSize) {
+          const chunk = u8.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, chunk);
+        }
+        // Use Unicode-safe base64 encoding
+        try {
+          return btoa(binary);
+        } catch (e) {
+          // Fallback for Unicode characters
+          const utf8Bytes = new TextEncoder().encode(binary);
+          let safeBinary = "";
+          for (let i = 0; i < utf8Bytes.length; i++) {
+            safeBinary += String.fromCharCode(utf8Bytes[i]);
+          }
+          return btoa(safeBinary);
+        }
+      }
+      const base64String = uint8ToBase64(uint8Array);
+      theme.previewImage = `${previewImage.type};base64,${base64String}`;
+    }
+
+    const result = await saveThemeToGitHub(env, theme, "pending");
+
+    const baseUrl = new URL(request.url).origin;
+    if (result.success) {
+      return Response.redirect(
+        `${baseUrl}/submit?message=${encodeURIComponent("Theme submitted successfully! Your theme has been saved to GitHub and is now awaiting admin approval. You'll be able to see it on the main page once it's approved.")}`,
+        302,
+      );
+    } else {
+      // Create detailed error message with error type and details
+      let errorMessage = result.message;
+      if (result.details) {
+        errorMessage += ` (${result.details})`;
+      }
+
+      return Response.redirect(
+        `${baseUrl}/submit?error=1&errorType=${encodeURIComponent(result.error || "unknown")}&message=${encodeURIComponent(errorMessage)}`,
+        302,
+      );
+    }
+  } catch (error) {
+    console.error("Theme submission error:", error);
+    const baseUrl = new URL(request.url).origin;
+    return Response.redirect(
+      `${baseUrl}/submit?error=1&message=${encodeURIComponent("Unexpected server error during submission.")}`,
+      302,
+    );
+  }
 }
 
 export async function showThemeDetails(request) {
-    const env = request.env;
-    const { id } = request.params;
+  const cleanThemeData = (theme) => {
+    if (theme.rawData) {
+      return theme.rawData;
+    }
+    const cleaned = { ...theme };
+    delete cleaned.id;
+    delete cleaned.source;
+    delete cleaned.createdAt;
+    delete cleaned.externalRepo;
+    delete cleaned.repositoryUrl;
+    return cleaned;
+  };
 
-    try {
-        const theme = await getThemeFromGitHub(env, id, "approved");
+  const env = request.env;
+  const { id } = request.params;
 
-        if (!theme) {
-            // Try pending themes
-            const pendingTheme = await getThemeFromGitHub(env, id, "pending");
-            if (pendingTheme) {
-                return new Response("Theme is pending approval", { status: 403 });
-            }
-            console.warn("Theme not found in approved or pending for id:", id);
-            return new Response("Theme not found", { status: 404 });
+  try {
+    let theme;
+
+    if (id.startsWith("external_")) {
+      const externalThemes = await fetchExternalThemes(env);
+      theme = externalThemes.find((t) => t.id === id);
+    } else {
+      theme = await getThemeFromGitHub(env, id, "approved");
+
+      if (!theme) {
+        // Try pending themes
+        const pendingTheme = await getThemeFromGitHub(env, id, "pending");
+        if (pendingTheme) {
+          return new Response("Theme is pending approval", { status: 403 });
         }
+      }
+    }
 
-        // Generate direct GitHub raw URL
-        const rawUrl = `https://raw.githubusercontent.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/main/themes/approved/${encodeURIComponent(id)}.json`;
+    if (!theme) {
+      console.warn("Theme not found:", id);
+      return new Response("Theme not found", { status: 404 });
+    }
 
-        const html = `
+    // Generate appropriate URL based on theme source
+    let rawUrl = "";
+    if (theme.source === "external") {
+      rawUrl = theme.url;
+    } else {
+      rawUrl = `https://raw.githubusercontent.com/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/main/themes/approved/${encodeURIComponent(id)}.json`;
+    }
+
+    const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1778,11 +2704,11 @@ export async function showThemeDetails(request) {
             <div class="page-header">
                 <h1><span class="material-symbols-outlined">brush</span> ${theme.name}</h1>
                 <div class="theme-meta">
-                    <span><span class="material-symbols-outlined">calendar_today</span> Created: ${theme.createdAt || "Unknown"}</span>
                 </div>
             </div>
 
-            ${theme.previewUrl
+            ${
+              theme.previewUrl
                 ? `
             <div class="hero-preview" id="detailHeroPreview">
                 <img src="${theme.previewUrl}" alt="${theme.name} Preview" id="detailHeroImage" loading="lazy" decoding="async">
@@ -1794,13 +2720,47 @@ export async function showThemeDetails(request) {
             <div class="card">
                 <h2>Theme Description</h2>
                 <p>${theme.description}</p>
+                ${
+                  theme.source === "external"
+                    ? `
+                <div style="margin-top: 16px; padding: 16px; background: var(--md-sys-color-surface-variant); border-radius: 8px; border-left: 4px solid var(--md-sys-color-primary);">
+                    <h3 style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface); font-size: 1.1rem;">
+                        <span class="material-symbols-outlined" style="font-size: 20px; vertical-align: middle;">folder_shared</span>
+                        External Repository
+                    </h3>
+                    <p style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface-variant);">
+                        <strong>Repository:</strong> <a href="${theme.externalRepo?.url || theme.url || "#"}" target="_blank" rel="noopener noreferrer" style="color: var(--md-sys-color-primary);">${theme.externalRepo?.name || "External Repository"}</a>
+                    </p>
+                    <p style="margin: 0 0 8px 0; color: var(--md-sys-color-on-surface-variant);">
+                        <strong>Author:</strong> ${theme.author || theme.externalRepo?.author || "Unknown"}
+                    </p>
+                    <p style="margin: 0; color: var(--md-sys-color-on-surface-variant);">
+                        <strong>Description:</strong> ${theme.externalRepo?.description || theme.description || "No description available"}
+                    </p>
+                </div>
+                `
+                    : ""
+                }
             </div>
 
+            ${
+              theme.repositoryUrl
+                ? `
             <div class="card">
-                <h2><span class="material-symbols-outlined">link</span> Direct GitHub Raw Link</h2>
+                <h2><span class="material-symbols-outlined">folder_open</span> Repository</h2>
+                <a href="${theme.repositoryUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outlined" style="text-align: left; justify-content: flex-start;">
+                    <span class="material-symbols-outlined">open_in_new</span> ${theme.repositoryUrl}
+                </a>
+            </div>
+            `
+                : ""
+            }
+
+            <div class="card">
+                <h2><span class="material-symbols-outlined">link</span> ${theme.source === "external" ? "Repository Link" : "Direct GitHub Raw Link"}</h2>
                 <div class="raw-link" id="rawLink" style="background: var(--md-sys-color-surface-variant); padding: 15px; border-radius: 6px; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline); margin: 15px 0; word-break: break-all;">${rawUrl}</div>
                 <button class="btn btn-copy" onclick="copyRawLink()">
-                    <span class="material-symbols-outlined">content_copy</span> Copy Raw Link
+                    <span class="material-symbols-outlined">content_copy</span> Copy Link
                 </button>
             </div>
 
@@ -1811,10 +2771,23 @@ export async function showThemeDetails(request) {
                         <span class="material-symbols-outlined">content_copy</span> Copy JSON
                     </button>
                 </div>
-                <pre id="themeJSON" style="background: var(--md-sys-color-surface-variant); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline);">${JSON.stringify(theme, null, 2)}</pre>
+                <pre id="themeJSON" style="background: var(--md-sys-color-surface-variant); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline);">${JSON.stringify(theme.source === "external" ? theme.themeData : theme, null, 2)}</pre>
             </div>
 
-            <div style="text-align: center; margin: 30px 0;" class="theme-actions">\n                <button class="btn btn-filled" onclick="copyThemeLink('${id}')">\n                    <span class="material-symbols-outlined">link</span> Copy Raw GitHub Link\n                </button>\n
+            <div style="text-align: center; margin: 30px 0;" class="theme-actions">
+                ${
+                  theme.source === "external"
+                    ? `
+                <a href="${theme.externalRepo?.url || theme.url || "#"}" target="_blank" rel="noopener noreferrer" class="btn btn-filled">
+                    <span class="material-symbols-outlined">open_in_new</span> Visit Repository
+                </a>
+                `
+                    : `
+                <button class="btn btn-filled" onclick="copyThemeLink('${id}')">
+                    <span class="material-symbols-outlined">link</span> Copy Raw GitHub Link
+                </button>
+                `
+                }
                 <a href="/" class="btn btn-outlined">
                     <span class="material-symbols-outlined">arrow_back</span> Back to Themes
                 </a>
@@ -1863,45 +2836,45 @@ export async function showThemeDetails(request) {
 </body>
 </html>`;
 
-        return new Response(html, {
-            headers: { "Content-Type": "text/html" },
-        });
-    } catch (error) {
-        console.error("Error loading theme details:", error);
-        return new Response("Error loading theme", { status: 500 });
-    }
+    return new Response(html, {
+      headers: { "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Error loading theme details:", error);
+    return new Response("Error loading theme", { status: 500 });
+  }
 }
 
 export async function downloadThemeJSON(request) {
-    const env = request.env;
-    const { id } = request.params;
+  const env = request.env;
+  const { id } = request.params;
 
-    try {
-        // Try approved first
-        let theme = await getThemeFromGitHub(env, id, "approved");
-        let status = "approved";
+  try {
+    // Try approved first
+    let theme = await getThemeFromGitHub(env, id, "approved");
+    let status = "approved";
 
-        if (!theme) {
-            // Try pending
-            theme = await getThemeFromGitHub(env, id, "pending");
-            status = "pending";
-        }
-
-        if (!theme) {
-            return new Response("Theme not found", { status: 404 });
-        }
-
-        const jsonContent = JSON.stringify(theme, null, 2);
-        const filename = `${theme.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${id}.json`;
-
-        return new Response(jsonContent, {
-            headers: {
-                "Content-Type": "application/json",
-                "Content-Disposition": `attachment; filename="${filename}"`,
-            },
-        });
-    } catch (error) {
-        console.error("Download error:", error);
-        return new Response("Error downloading theme", { status: 500 });
+    if (!theme) {
+      // Try pending
+      theme = await getThemeFromGitHub(env, id, "pending");
+      status = "pending";
     }
+
+    if (!theme) {
+      return new Response("Theme not found", { status: 404 });
+    }
+
+    const jsonContent = JSON.stringify(theme, null, 2);
+    const filename = `${theme.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_${id}.json`;
+
+    return new Response(jsonContent, {
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (error) {
+    console.error("Download error:", error);
+    return new Response("Error downloading theme", { status: 500 });
+  }
 }
