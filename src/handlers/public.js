@@ -276,21 +276,21 @@ export function getNavbarHtml(activePage, isAdmin) {
 export const sharedStyles = `
 <style>
     :root {
-        --md-sys-color-primary: #4361ee;
+        --md-sys-color-primary: #3355dd;
         --md-sys-color-on-primary: #ffffff;
-        --md-sys-color-primary-container: #cde5ff;
-        --md-sys-color-on-primary-container: #001d32;
+        --md-sys-color-primary-container: #d4dcff;
+        --md-sys-color-on-primary-container: #001847;
         --md-sys-color-secondary: #51606f;
         --md-sys-color-on-secondary: #ffffff;
-        --md-sys-color-secondary-container: #d4e4f6;
+        --md-sys-color-secondary-container: #c5d4e6;
         --md-sys-color-on-secondary-container: #0d1d2a;
-        --md-sys-color-surface: #fbfcfe;
+        --md-sys-color-surface: #f0f2f5;
         --md-sys-color-on-surface: #1a1c1e;
-        --md-sys-color-surface-variant: #eef1f6;
+        --md-sys-color-surface-variant: #e3e6eb;
         --md-sys-color-on-surface-variant: #42474e;
         --md-sys-color-outline: #73777f;
-        --md-sys-color-background: #ffffff;
-        --md-sys-color-background-variant: #f5f8fa;
+        --md-sys-color-background: #e8eaed;
+        --md-sys-color-background-variant: #e0e2e5;
         --md-sys-color-error: #ba1a1a;
         --md-sys-color-error-container: #ffdad6;
         --md-sys-color-on-error-container: #410002;
@@ -307,10 +307,10 @@ export const sharedStyles = `
     }
     /* Dark Theme */
     .dark-mode {
-        --md-sys-color-primary: #97cbff;
-        --md-sys-color-on-primary: #003352;
-        --md-sys-color-primary-container: #004a74;
-        --md-sys-color-on-primary-container: #cde5ff;
+        --md-sys-color-primary: #adc6ff;
+        --md-sys-color-on-primary: #002578;
+        --md-sys-color-primary-container: #1c3999;
+        --md-sys-color-on-primary-container: #dbe3ff;
         --md-sys-color-secondary: #b8c8da;
         --md-sys-color-on-secondary: #233240;
         --md-sys-color-secondary-container: #394857;
@@ -413,7 +413,7 @@ export const sharedStyles = `
         display: flex;
         align-items: center;
         gap: 8px;
-        transition: background-color 0.2s ease;
+        transition: all 0.2s ease;
         font-family: inherit;
         font-size: inherit;
     }
@@ -498,29 +498,36 @@ export const sharedStyles = `
         border-radius: 20px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.2s ease;
+        transition: all 0.2s ease;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         font-size: 0.9rem;
         justify-content: center;
+        box-shadow: 0 1px 2px var(--md-sys-color-shadow);
     }
     .btn-filled {
         background-color: var(--md-sys-color-primary);
         color: var(--md-sys-color-on-primary);
     }
     .btn-filled:hover {
-        background-color: var(--md-sys-color-secondary);
+        background-color: var(--md-sys-color-primary);
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px var(--md-sys-color-shadow);
     }
     .btn-outlined {
-        background-color: transparent;
+        background-color: var(--md-sys-color-surface);
         border: 1px solid var(--md-sys-color-outline);
         color: var(--md-sys-color-primary);
     }
     .btn-outlined:hover {
-        background-color: var(--md-sys-color-primary);
-        color: var(--md-sys-color-on-primary);
+        background-color: var(--md-sys-color-surface-variant);
+        border-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px var(--md-sys-color-shadow);
     }
     .btn-copy {
         background-color: var(--md-sys-color-primary);
@@ -787,7 +794,7 @@ export async function showHomePage(request, env) {
                         <p class="theme-description">${theme.description || theme.themeData?.description || "No description available"}</p>
                     </div>
                     <div class="theme-actions">
-                        <a href="/theme/${theme.themeData?.filename?.replace(".json", "")}" class="btn btn-filled">
+                        <a href="/theme/${theme.themeData?.filename?.replace(".json", "")}" class="btn btn-filled" style="flex: 1;">
                             <span class="material-symbols-outlined">visibility</span> View Details
                         </a>
                         ${
@@ -2778,33 +2785,43 @@ export async function showThemeDetails(request) {
                 </div>
             </div>
 
+
+
             <div class="card">
-                <div class="upload-section">
-                    <div class="upload-section-header">
-                        <span class="material-symbols-outlined">link</span>
-                        <h3>Theme Link</h3>
-                    </div>
-                    <div class="json-toolbar">
-                        <button class="btn btn-outlined" onclick="copyRawLink()">
-                            <span class="material-symbols-outlined">content_copy</span> Copy Link
-                        </button>
-                    </div>
-                    <div class="code-editor" style="margin-top: 12px;">
-                        <div class="editor-inner" style="padding: 12px;">
-                            <div class="raw-link" id="rawLink" style="font-family: 'Roboto Mono', monospace; font-size: 0.95rem; color: var(--md-sys-color-on-surface); word-break: break-all;">${rawUrl}</div>
+                <div class="json-editor-section" style="margin-top: 24px;">
+                    <div class="upload-section">
+                        <div class="upload-section-header" style="background: var(--md-sys-color-surface-variant); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">link</span>
+                                    <h3 style="color: var(--md-sys-color-on-surface); margin: 0;">Theme Link</h3>
+                                </div>
+                                <button class="btn btn-filled" onclick="copyRawLink()" style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); padding: 8px 16px; border-radius: 20px; border: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap;">
+                                    <span class="material-symbols-outlined">content_copy</span> Copy
+                                </button>
+                            </div>
+                            <div style="margin-top: 12px; background: var(--md-sys-color-background); padding: 12px; border-radius: 6px; border: 1px solid var(--md-sys-color-outline); font-family: 'Roboto Mono', monospace; font-size: 0.95rem; color: var(--md-sys-color-on-surface); line-height: 1.5; word-break: break-all;">${rawUrl}</div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2><span class="material-symbols-outlined">code</span> Theme JSON</h2>
-                    <button class="btn btn-copy" onclick="copyJSON()">
-                        <span class="material-symbols-outlined">content_copy</span> Copy JSON
-                    </button>
+                <div class="section-header" style="background: var(--md-sys-color-surface-variant); padding: 12px 16px; border-radius: 8px; margin: 16px 0; cursor: pointer;" onclick="toggleThemeCode()">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">code</span>
+                            <h3 style="color: var(--md-sys-color-on-surface); margin: 0;">Theme Code</h3>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button class="btn btn-filled" onclick="event.stopPropagation(); copyThemeCode()" style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); padding: 8px 16px; border-radius: 20px; border: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap;">
+                                <span class="material-symbols-outlined">content_copy</span> Copy
+                            </button>
+                            <span id="themeCodeToggle" class="material-symbols-outlined" style="color: var(--md-sys-color-on-surface-variant); transition: transform .22s cubic-bezier(.2,.8,.2,1);">expand_more</span>
+                        </div>
+                    </div>
                 </div>
-                <pre id="themeJSON" style="background: var(--md-sys-color-surface-variant); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface-variant); border: 1px solid var(--md-sys-color-outline);">${JSON.stringify(theme, null, 2)}</pre>
+                <div id="themeCodeContent" style="max-height: 0; overflow: hidden; opacity: 0; transition: max-height .24s cubic-bezier(.2,.8,.2,1), opacity .16s ease;">
+                    <pre id="themeJSON" style="background: var(--md-sys-color-surface); padding: 20px; border-radius: 6px; overflow-x: auto; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline); margin: 0;">${JSON.stringify(theme, null, 2)}</pre>
+                </div>
             </div>
 
             <script>
@@ -2838,7 +2855,7 @@ export async function showThemeDetails(request) {
                 </a>
                 `
                     : `
-                <button class="btn btn-filled" onclick="copyThemeLink('${id}')">
+                <button class="btn btn-filled" onclick="copyRawLink()">
                     <span class="material-symbols-outlined">link</span> Copy Raw GitHub Link
                 </button>
                 `
@@ -2886,7 +2903,46 @@ export async function showThemeDetails(request) {
                 const apply = () => { if (detailImg.naturalHeight > detailImg.naturalWidth) detailWrap.classList.add('portrait'); };
                 if (detailImg.complete) apply(); else detailImg.addEventListener('load', apply, { once: true });
             }
+        });
+
+        function copyRawLink() {
+            const rawLink = document.getElementById('rawLink').textContent;
+            navigator.clipboard.writeText(rawLink).then(() => {
+                const notification = document.getElementById('notification');
+                notification.textContent = 'Link copied to clipboard!';
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 3000);
             });
+        }
+
+        // Theme code toggle functionality
+        function toggleThemeCode() {
+            const content = document.getElementById('themeCodeContent');
+            const toggle = document.getElementById('themeCodeToggle');
+
+            if (content.style.maxHeight === '0px' || !content.style.maxHeight) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.style.opacity = '1';
+                toggle.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.maxHeight = '0';
+                content.style.opacity = '0';
+                toggle.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Copy theme code functionality
+        function copyThemeCode() {
+            const code = document.getElementById('themeJSON').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const notification = document.getElementById('notification');
+                notification.textContent = 'Theme code copied to clipboard!';
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            });
+        }
     </script>
 </body>
 </html>`;
